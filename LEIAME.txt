@@ -1,0 +1,151 @@
+﻿Autor: Hendrik Kees Koppe
+GRR: 20203941
+
+
+O programa invmat tem como objetivo calcular a inversa de uma matriz, por meio da Eliminação de Gauss, Pivoteamento, Fatoração LU, e por último Refinamento.
+
+
+Rode o makefile, em seguida digite ./invmat com os seguintes parâmetros:
+        -e nome.txt (opcional): arquivo de onde será lida a entrada, caso não exista, a entrada é lida do stdin.
+        -s nome.txt (opcional): arquivo onde será armazenado a saída do programa, caso não exista, é impresso em stdout.
+        -r inteiro (opcional): a matriz será gerada aleatoriamente, com elementos de tamanho até 100000, e o tamanho dessa matriz será o valor após -r. Em caso desse parâmetro ser passado, qualquer arquivo de entrada será ignorado.
+        -i inteiro (obrigatório): quantidade de iterações a serem feitas no refinamento, esse valor precisa ser maior que 0.
+
+
+A entrada do programa deve ser o tamanho da matriz quadrada, e em seguida, seus valores.
+
+
+        ***ESTRUTURAS***
+
+
+Matriz: estrutura que contém o tamanho da matriz quadrada e uma matriz de doubles com seus elementos. Além de ser usado para representar matrizes, como Identidade, L e U, é usado também para representar os coeficientes de um SL.
+Vetor: estrutura que contém o tamanho do vetor e um vetor de doubles com seus elementos. É usado para representar os termos independentes de um SL.
+Dados: estrutura que armazena as posições dos argumentos de entrada, para que sejam recuperados depois.
+
+
+***FUNÇÕES***
+
+
+void procura_entrada(dados *d, int argc, char *argv[]):
+Função que procura a posição que a entrada está em argv, e armazena na struct de dados, se não encontrar, a posição de entrada recebe -1.
+
+
+void procura_saida(dados *d, int argc, char *argv[]):
+Função que procura a posição que a saída está em argv, e armazena na struct de dados, se não encontrar, a posição de saída recebe -1.
+
+
+void procura_dimensao_random(dados *d, int argc, char *argv[]):
+Função que procura a posição que o -r está em argv, e armazena na struct de dados, se não encontrar, a não será uma matriz randômica, e posição de dimensao_random recebe -1.
+
+
+void procura_iteracoes(dados *d, int argc, char *argv[]):
+Função que procura a posição que a quantidade de iterações no refinamento está em argv, e armazena na struct de dados, se não encontrar, a posição de iteracao será -1.
+dados * le_parametros(dados *d,int argc,char *argv[] ):
+Função que chama as funções de procura de parâmetros, e faz ajustes, como em caso da opção -r estar selecionada, e em caso da quantidade de iterações ser inválida.
+
+
+FILE * define_saida(dados *d,int argc,char *argv[]):
+Função que define onde a saída será impressa, seja em stdout ou no arquivo solicitado pelo usuário.
+
+
+int define_iteracoes(dados *d, int argc, char *argv[]):
+Função que devolve a quantidade de iterações que o usuário quer realizar no refinamento, além de tratar alguns erros.
+
+
+vetor * aloca_vetor(int tam):
+Função que aloca um vetor de tamanho tam, e devolve ele.
+
+
+void desaloca_vetor(vetor *v);
+Função que desaloca um vetor, liberando a memória alocada dinamicamente.
+
+
+matriz * aloca_matriz(int tam):
+Função que aloca uma matriz de tamanho tam*tam, e devolve ela.
+
+
+void desaloca_matriz(matriz *m);
+Função que desaloca uma matriz, liberando a memória alocada dinamicamente.
+
+
+vetor* pega_coluna(matriz *m,int col):
+Função que separa a coluna col da matriz m e devolve esse vetor.
+
+
+void imprime_matriz_quadrada(matriz *m, FILE *arq):
+Função que imprime uma matriz quadrada na saída escolhida pelo usuário, pode ser um arquivo ou o stdout.
+
+
+matriz * cria_matriz_random(dados *d,char *argv[]):
+Função que lê o tamanho da dimensão da matriz que o usuário criar, e insere nessa nova matriz valores reais aleatorizados de tamanho até 100000.
+
+
+matriz * le_e_cria_matriz(dados *d,char *argv[]):
+Função que aloca, e lê uma matriz da entrada escolhida pelo usuário, trata erro de arquivo inexistente também.
+
+
+matriz * cria_identidade(int tam):
+Função que devolve uma matriz identidade de tamanho tam*tam.
+
+
+void copia_matriz(matriz *m,matriz *copia):
+Função que copia a matriz m em copia.
+
+
+matriz * multiplica_matrizes_quadradas(matriz *a, matriz *b):
+Função que multiplica duas matrizes quadradas a e b, e devolve uma matriz resultado dessa operação. Trata erros de matrizes de tamanhos diferentes.
+
+
+ matriz * subtrai_matrizes_quadradas(matriz *a, matriz *b):
+Função que checa se as duas matrizes a e b tem tamanho igual, e se tiver, subtrai as duas, devolvendo em result.
+
+
+void insere_coluna_na_matriz(matriz *m, vetor *v, int coluna):
+Função que insere um vetor v na coluna “coluna” da matriz. É usada para criar as matrizes de resíduo.
+
+
+void soma_matrizes_quadradas(matriz *a, matriz*b):
+Função que soma duas matrizes quadradas a e b em a.
+
+
+void troca_linhas(matriz *m, matriz *identidade, int l1, int l2):
+Função que troca as linhas l1 e l2 nas matrizes m e identidade, é usada no pivoteamento parcial.
+
+
+double determinante(matriz *m):
+Função que descobre o determinante da matriz pelo método dos cofatores e devolve ele.
+
+int tem_determinante(double det):
+Função que descobre o determinante da matriz pelo método dos cofatores e devolve 0 se a matriz tiver determinante = 0 (não é inversível), caso contrário, devolve 1.
+
+
+double cofator(matriz *m, int linha, int coluna):
+Função que calcula o cofator de uma matriz. É utilizada pela função determinante
+
+
+double norma_l2(matriz *m,double *tempo_norma):
+Função que calcula a norma L2 da matriz de resíduos, além de calcular o tempo gasto para isso, que fica armazenado em tempo_norma.
+
+
+int encontra_maior_da_coluna(matriz *m, int lin_e_col_pivo):
+Função usada para encontrar o maior valor nas posições abaixo do pivô na coluna atual, devolve a linha do maior valor.
+
+
+void pivoteamento(matriz *m, matriz *identidade):
+Função que realiza o pivoteamento parcial (encontra maior elemento da coluna dos pivôs e troca essas linhas), tanto na matriz m, quanto na identidade, para evitar que a última fique defasada. Quando essa função é chamada na fase do cálculo do refinamento, ao invés de passar a identidade, é passada a matriz de resíduos.
+
+
+void encontra_lu(matriz *l, matriz *u,double *tempo_lu):
+Função que encontra as matrizes L e U, além de calcular o tempo gasto para isso. É importante notar que nas funções, os valores de algumas diagonais são atribuídos arbitrariamente, para evitar que, devido a imprecisões, o valor fique errado.
+
+
+matriz * encontra_a_inversa(matriz *l, matriz *u, matriz *identidade):
+Função que encontra a matriz Inversa, por meio das matrizes L, U e Identidade Pivoteada, por meio do cálculo das y e x, que vão sendo atribuidas diretamente na matriz inversa.
+
+
+matriz *refinamento(matriz *m,matriz *l,matriz *u, matriz *inversa, matriz *identidade,int iteracoes,double *tempo_iter, double *tempo_residuo,FILE *arq):
+Função que realiza o refinamento “iteracoes” vezes, além de calcular o tempo médio gasto para isso.Primeiro, é multiplicado a matriz m pela sua inversa, e essa matriz subtraída da Identidade, para encontrar o resíduo. Então é calculado o valor da norma, encontrada a nova inversa, por meio de L,U e Resíduo, ao invés da Identidade (como é feito na fatoração LU comum), então essa nova inversa é somada no resultado anterior, tornando-o mais preciso.
+
+
+matriz * fatoracao_lu(matriz *m, double *tempo_lu, double *tempo_iter, double *tempo_residuo,FILE *arq,int iteracoes):
+Função que faz o pivoteamento parcial, encontra as matrizes L, U e a inversa e chama a função de Refinamento. Ou seja, faz a fatoração LU completa.
